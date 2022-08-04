@@ -1,7 +1,7 @@
 import { SelectChangeEvent, Box, FormControl, Select, MenuItem, Link } from "@mui/material"
 import { useState, useEffect } from "react"
 
-import { dbTypeOptions, passwordEncryptionOptions, sslModeOptions, presetConfigsOptions } from './SelectComonentsOptions'
+import { dbTypeOptions, passwordEncryptionOptions, sslModeOptions, presetConfigsOptions } from './SelectComponentsOptions'
 
 type Params = {
     id: number,
