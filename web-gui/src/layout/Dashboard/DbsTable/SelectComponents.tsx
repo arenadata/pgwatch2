@@ -1,7 +1,7 @@
-import { SelectChangeEvent, Box, FormControl, Select, MenuItem, Link } from "@mui/material"
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react";
+import { Box, FormControl, Link, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 
-import { dbTypeOptions, passwordEncryptionOptions, sslModeOptions, presetConfigsOptions } from './SelectComponentsOptions'
+import { dbTypeOptions, passwordEncryptionOptions, presetConfigsOptions, sslModeOptions } from './SelectComponentsOptions';
 
 type Params = {
     id: number,
@@ -13,18 +13,18 @@ type Params = {
 */
 
 const DbTypeComponent = ({ id, value }: Params) => {
-    const [dbType, setDbType] = useState('postgres')
+    const [dbType, setDbType] = useState('postgres');
 
     const handleChangeDbType = (event: SelectChangeEvent) => {
-        setDbType(event.target.value as string)
+        setDbType(event.target.value as string);
     };
 
     useEffect(() => {
         if (value === undefined) {
-            return
+            return;
         }
-        setDbType(value)
-    }, [])
+        setDbType(value);
+    }, []);
 
     return (
         <Box sx={{ width: 200 }}>
@@ -37,20 +37,20 @@ const DbTypeComponent = ({ id, value }: Params) => {
                     {dbTypeOptions.map((option) => {
                         return (
                             <MenuItem key={option.id} value={option.label}>{option.label}</MenuItem>
-                        )
+                        );
                     })}
                 </Select>
             </FormControl>
         </Box>
-    )
-}
+    );
+};
 
 /*
     Password encryption select component
 */
 
 const PasswordEncryptionComponent = ({ id, value }: Params) => {
-    const [passType, setPassType] = useState('plain-text')
+    const [passType, setPassType] = useState('plain-text');
 
     const handleChangePassType = (event: SelectChangeEvent) => {
         setPassType(event.target.value as string);
@@ -58,10 +58,10 @@ const PasswordEncryptionComponent = ({ id, value }: Params) => {
 
     useEffect(() => {
         if (value === undefined) {
-            return
+            return;
         }
-        setPassType(value)
-    }, [])
+        setPassType(value);
+    }, []);
 
     return (
         <Box sx={{ width: 200 }}>
@@ -74,20 +74,20 @@ const PasswordEncryptionComponent = ({ id, value }: Params) => {
                     {passwordEncryptionOptions.map((option) => {
                         return (
                             <MenuItem key={option.id} value={option.label}>{option.label}</MenuItem>
-                        )
+                        );
                     })}
                 </Select>
             </FormControl>
         </Box>
-    )
-}
+    );
+};
 
 /*
     SSL mode select component
 */
 
 const SslModeComponent = ({ id, value }: Params) => {
-    const [sslMode, setSslMode] = useState('disable')
+    const [sslMode, setSslMode] = useState('disable');
 
     const handleChangeSslMode = (event: SelectChangeEvent) => {
         setSslMode(event.target.value as string);
@@ -95,10 +95,10 @@ const SslModeComponent = ({ id, value }: Params) => {
 
     useEffect(() => {
         if (value === undefined) {
-            return
+            return;
         }
-        setSslMode(value)
-    }, [])
+        setSslMode(value);
+    }, []);
 
     return (
         <Box sx={{ width: 200 }}>
@@ -111,20 +111,20 @@ const SslModeComponent = ({ id, value }: Params) => {
                     {sslModeOptions.map((option) => {
                         return (
                             <MenuItem key={option.id} value={option.label}>{option.label}</MenuItem>
-                        )
+                        );
                     })}
                 </Select>
             </FormControl>
         </Box>
-    )
-}
+    );
+};
 
 /*
     Preset metrics config select component
 */
 
 const MetricsConfigComponent = ({ id, value }: Params) => {
-    const [presetConfig, setPresetConfig] = useState('')
+    const [presetConfig, setPresetConfig] = useState('');
 
     const handleChangeConfig = (event: SelectChangeEvent) => {
         setPresetConfig(event.target.value as string);
@@ -132,10 +132,10 @@ const MetricsConfigComponent = ({ id, value }: Params) => {
 
     useEffect(() => {
         if (value === undefined) {
-            return
+            return;
         }
-        setPresetConfig(value)
-    }, [])
+        setPresetConfig(value);
+    }, []);
 
     return (
         <Box sx={{ width: 200 }}>
@@ -148,7 +148,7 @@ const MetricsConfigComponent = ({ id, value }: Params) => {
                     {presetConfigsOptions.map((option) => {
                         return (
                             <MenuItem key={option.id} value={option.label}>{option.label}</MenuItem>
-                        )
+                        );
                     })}
                 </Select>
                 <Box sx={{ display: "inline" }}>
@@ -156,22 +156,23 @@ const MetricsConfigComponent = ({ id, value }: Params) => {
                         show
                     </Link>
                     <Link onClick={() => {
-                        (document.getElementById(`custom-metrics-config-${id}`) as HTMLInputElement).value = presetConfig
-                    }} href="#" underline="hover">
+                        (document.getElementById(`custom-metrics-config-${id}`) as HTMLInputElement).value = presetConfig;
+                    }} href="#" underline="hover"
+                    >
                         copy
                     </Link>
                 </Box>
             </FormControl>
         </Box>
-    )
-}
+    );
+};
 
 /*
     Standby preset config select component
 */
 
 const StandbyConfigComponent = ({ id, value }: Params) => {
-    const [presetConfig, setPresetConfig] = useState('')
+    const [presetConfig, setPresetConfig] = useState('');
 
     const handleChangeConfig = (event: SelectChangeEvent) => {
         setPresetConfig(event.target.value as string);
@@ -179,10 +180,10 @@ const StandbyConfigComponent = ({ id, value }: Params) => {
 
     useEffect(() => {
         if (value === undefined) {
-            return
+            return;
         }
-        setPresetConfig(value)
-    }, [])
+        setPresetConfig(value);
+    }, []);
 
     return (
         <Box sx={{ width: 200 }}>
@@ -195,7 +196,7 @@ const StandbyConfigComponent = ({ id, value }: Params) => {
                     {presetConfigsOptions.map((option) => {
                         return (
                             <MenuItem key={option.id} value={option.label}>{option.label}</MenuItem>
-                        )
+                        );
                     })}
                 </Select>
                 <Box sx={{ display: "inline" }}>
@@ -203,14 +204,15 @@ const StandbyConfigComponent = ({ id, value }: Params) => {
                         show
                     </Link>
                     <Link onClick={() => {
-                        (document.getElementById(`custom-standby-config-${id}`) as HTMLInputElement).value = presetConfig
-                    }} href="#" underline="hover">
+                        (document.getElementById(`custom-standby-config-${id}`) as HTMLInputElement).value = presetConfig;
+                    }} href="#" underline="hover"
+                    >
                         copy
                     </Link>
                 </Box>
             </FormControl>
         </Box>
-    )
-}
+    );
+};
 
-export { DbTypeComponent, PasswordEncryptionComponent, SslModeComponent, MetricsConfigComponent, StandbyConfigComponent }
+export { DbTypeComponent, PasswordEncryptionComponent, SslModeComponent, MetricsConfigComponent, StandbyConfigComponent };

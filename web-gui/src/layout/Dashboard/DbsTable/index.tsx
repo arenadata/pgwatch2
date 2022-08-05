@@ -1,10 +1,47 @@
-import { Box, Typography} from "@mui/material"
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
+import { Box, Typography} from "@mui/material";
 
-import { DbTypeComponent, PasswordEncryptionComponent, SslModeComponent, MetricsConfigComponent, StandbyConfigComponent } from './SelectComponents'
+import {
+  DataGrid,
+  GridColDef,
+  GridRenderCellParams
+} from '@mui/x-data-grid';
+
 import { ActionsComponent } from './ActionsComponent';
-import { SimpleTextField, MultilineTextField } from "./TextFieldComponents";
 import { CheckboxMedium } from "./CheckboxComponent";
+import { DbTypeComponent, MetricsConfigComponent, PasswordEncryptionComponent, SslModeComponent, StandbyConfigComponent } from './SelectComponents';
+import { MultilineTextField, SimpleTextField } from "./TextFieldComponents";
+
+const mockRows = [
+  {
+    id: 1,
+    uniqueName: 'test',
+    dbType: 'patroni',
+    dbPort: 5433,
+    dbName: 'diploma',
+    dbUser: 'cybertec-admin',
+    dbPassword: 'cybertec-admin',
+    lastModified: new Date().toUTCString(),
+    passwordEncryption: 'plain-text',
+    helpers: true,
+    sslMode: 'verify-ca',
+    presetMetricsConf: 'exhaustive',
+    standbyPresetConf: 'standard'
+  },
+  {
+    id: 2,
+    uniqueName: 'test2',
+    dbType: 'pgpool',
+    dbPort: 6214,
+    dbName: 'cybertec-pgwatch2',
+    dbUser: 'qwertyui12345',
+    dbPassword: 'qwertyui12345',
+    lastModified: new Date('2021-08-10T03:24:00').toUTCString(),
+    passwordEncryption: 'aes-gcm-256',
+    sslMode: 'verify-full',
+    presetMetricsConf: 'superuser_no_python',
+    standbyPresetConf: 'rds'
+  }
+];
 
 export const DbsTable = () => {
 
@@ -16,11 +53,12 @@ export const DbsTable = () => {
             width: 75
         },
         {
-            field: 'uniqueName',
+            field: "uniqueName",
             headerName: 'Unique name',
-            renderCell: (params: GridRenderCellParams<string>) => (
-                <SimpleTextField param={params.value} placeholder="Type unique name here" id={`unique-name-${params.row.id}`} type='text' />
-            ),
+            type: "string",
+            // renderCell: (params: GridRenderCellParams<string>) => (
+            //     <SimpleTextField param={params.value} placeholder="Type unique name here" id={`unique-name-${params.row.id}`} type="text" />
+            // ),
             width: 200,
             description: 'NB! Choose a good name as this shouldn\'t be changed later (cannot easily update InfluxDB data). Will be used as prefix during DB discovery mode',
         },
@@ -37,7 +75,7 @@ export const DbsTable = () => {
             field: 'dbHost',
             headerName: 'DB host',
             renderCell: (params: GridRenderCellParams<string>) => (
-                <SimpleTextField param={params.value} placeholder="Type host here" id={`db-host-${params.row.id}`} type='text' />
+                <SimpleTextField param={params.value} placeholder="Type host here" id={`db-host-${params.row.id}`} type="text" />
             ),
             width: 150
         },
@@ -45,7 +83,7 @@ export const DbsTable = () => {
             field: 'dbPort',
             headerName: 'DB port',
             renderCell: (params: GridRenderCellParams<string>) => (
-                <SimpleTextField param={params.value} type='number' id={`db-port-${params.row.id}`} defaultValue='5432' />
+                <SimpleTextField param={params.value} type="number" id={`db-port-${params.row.id}`} defaultValue="5432" />
             ),
             width: 150
         },
@@ -53,7 +91,7 @@ export const DbsTable = () => {
             field: 'dbName',
             headerName: 'DB dbname',
             renderCell: (params: GridRenderCellParams<string>) => (
-                <SimpleTextField param={params.value} placeholder="Type DB name here" id={`db-name-${params.row.id}`} type='text' />
+                <SimpleTextField param={params.value} placeholder="Type DB name here" id={`db-name-${params.row.id}`} type="text" />
             ),
             width: 200,
             description: 'If left empty, all non-template DBs found from the cluster will be added to monitoring (if not already monitored), prefixed with the \'Unique name\'. For \'pgbouncer\' DB type insert the \'pool\' name. Not relevant for \'postgres-continuous-discovery\''
@@ -62,7 +100,7 @@ export const DbsTable = () => {
             field: 'dbNameInclPattern',
             headerName: 'DB name inclusion pattern',
             renderCell: (params: GridRenderCellParams<string>) => (
-                <SimpleTextField param={params.value} placeholder="Type DB name inclusion pattern here" id={`db-name-incl-patt-${params.row.id}`} type='text' />
+                <SimpleTextField param={params.value} placeholder="Type DB name inclusion pattern here" id={`db-name-incl-patt-${params.row.id}`} type="text" />
             ),
             width: 200,
             description: 'POSIX regex input. Relevant only for \'discovery\' DB types'
@@ -71,7 +109,7 @@ export const DbsTable = () => {
             field: 'dbNameExclPattern',
             headerName: 'DB name exclusion pattern',
             renderCell: (params: GridRenderCellParams<string>) => (
-                <SimpleTextField param={params.value} placeholder="Type DB name exclusion pattern here" id={`db-name-excl-patt-${params.row.id}`} type='text' />
+                <SimpleTextField param={params.value} placeholder="Type DB name exclusion pattern here" id={`db-name-excl-patt-${params.row.id}`} type="text" />
             ),
             width: 200,
             description: 'POSIX regex input. Relevant only for \'discovery\' DB types'
@@ -80,7 +118,7 @@ export const DbsTable = () => {
             field: 'dbUser',
             headerName: 'DB user',
             renderCell: (params: GridRenderCellParams<string>) => (
-                <SimpleTextField param={params.value} placeholder="Type DB user here" id={`db-user-${params.row.id}`} type='text' />
+                <SimpleTextField param={params.value} placeholder="Type DB user here" id={`db-user-${params.row.id}`} type="text" />
             ),
             width: 200,
             description: 'The login role for actual metrics fetching from the specified host'
@@ -89,7 +127,7 @@ export const DbsTable = () => {
             field: 'dbPassword',
             headerName: 'DB password',
             renderCell: (params: GridRenderCellParams<string>) => (
-                <SimpleTextField param={params.value} placeholder="Type DB password here" id={`db-password-${params.row.id}`} type='password' />
+                <SimpleTextField param={params.value} placeholder="Type DB password here" id={`db-password-${params.row.id}`} type="password" />
             ),
             width: 200,
             description: 'NB! By default password is stored in plain-text in the database'
@@ -125,7 +163,7 @@ export const DbsTable = () => {
             field: 'rootCa',
             headerName: 'Root CA',
             renderCell: (params: GridRenderCellParams<string>) => (
-                <SimpleTextField param={params.value} placeholder="Type root CA here" id={`root-ca-${params.row.id}`} type='text' />
+                <SimpleTextField param={params.value} placeholder="Type root CA here" id={`root-ca-${params.row.id}`} type="text" />
             ),
             width: 150,
             description: 'Path to Root CA file on the gatherer. Relevant for sslmode-s \'verify-ca\' and \'verify-full\''
@@ -134,7 +172,7 @@ export const DbsTable = () => {
             field: 'clientCert',
             headerName: 'Client cert',
             renderCell: (params: GridRenderCellParams<string>) => (
-                <SimpleTextField param={params.value} placeholder="Type client cert here" id={`client-certificate-${params.row.id}`} type='text' />
+                <SimpleTextField param={params.value} placeholder="Type client cert here" id={`client-certificate-${params.row.id}`} type="text" />
             ),
             width: 200,
             description: 'Path to Client certificate. Relevant for \'sslmode=verify-full\''
@@ -143,7 +181,7 @@ export const DbsTable = () => {
             field: 'clientKey',
             headerName: 'Client key',
             renderCell: (params: GridRenderCellParams<string>) => (
-                <SimpleTextField param={params.value} placeholder="Type client key here" id={`client-key-${params.row.id}`} type='text' />
+                <SimpleTextField param={params.value} placeholder="Type client key here" id={`client-key-${params.row.id}`} type="text" />
             ),
             width: 200,
             description: 'Path to Client key file. Relevant for \'sslmode=verify-full\''
@@ -152,7 +190,7 @@ export const DbsTable = () => {
             field: 'group',
             headerName: 'Group',
             renderCell: (params: GridRenderCellParams<string>) => (
-                <SimpleTextField param={params.value} defaultValue='default' placeholder="Type group here" id={`group-${params.row.id}`} type='text' />
+                <SimpleTextField param={params.value} defaultValue="default" placeholder="Type group here" id={`group-${params.row.id}`} type="text" />
             ),
             width: 120,
             description: 'Group name (e.g. \'prod\') for logical distinction of monitored databases. Can be used also to run multiple gatherers (sharding), one for each (or multiple) group(s). Required'
@@ -171,7 +209,7 @@ export const DbsTable = () => {
             headerName: 'Custom metrics config',
             renderCell: (params: GridRenderCellParams<string>) => (
                 <MultilineTextField param={params.value} placeholder="Type custom metris config here"
-                    id={`custom-metrics-config-${params.row.id}`} type='text'
+                    id={`custom-metrics-config-${params.row.id}`} type="text"
                 />
             ),
             width: 175,
@@ -191,7 +229,7 @@ export const DbsTable = () => {
             headerName: 'Standby custom config',
             renderCell: (params: GridRenderCellParams<string>) => (
                 <MultilineTextField param={params.value} placeholder="Type custom standby config here"
-                    id={`custom-standby-config-${params.row.id}`} type='text'
+                    id={`custom-standby-config-${params.row.id}`} type="text"
                 />
             ),
             width: 175,
@@ -201,7 +239,7 @@ export const DbsTable = () => {
             field: 'hostConf',
             headerName: 'Host config',
             renderCell: (params: GridRenderCellParams<string>) => (
-                <SimpleTextField param={params.value} placeholder="Type host config here" id={`host-config-${params.row.id}`} type='text' />
+                <SimpleTextField param={params.value} placeholder="Type host config here" id={`host-config-${params.row.id}`} type="text" />
             ),
             width: 190,
             description: 'Used for Patroni only currently. e.g.: {"dcs_type": "etcd|zookeeper|consul", "dcs_endpoints": ["http://127.0.0.1:2379/"], "namespace": "/service/", "scope": "batman"}'
@@ -210,7 +248,7 @@ export const DbsTable = () => {
             field: 'customTags',
             headerName: 'Custom tags',
             renderCell: (params: GridRenderCellParams<string>) => (
-                <SimpleTextField param={params.value} placeholder="Type custom tags here" id={`custom-tags-${params.row.id}`} type='text' />
+                <SimpleTextField param={params.value} placeholder="Type custom tags here" id={`custom-tags-${params.row.id}`} type="text" />
             ),
             width: 190,
             description: 'User defined tags for extra meaning in InfluxDB e.g. {"env": "prod", "app": "xyz"}'
@@ -219,7 +257,7 @@ export const DbsTable = () => {
             field: 'statementTimeout',
             headerName: 'Statement timeout [seconds]',
             renderCell: (params: GridRenderCellParams<string>) => (
-                <SimpleTextField param={params.value} id={`statement-timeout-${params.row.id}`} defaultValue='5' type='number' />
+                <SimpleTextField param={params.value} id={`statement-timeout-${params.row.id}`} defaultValue="5" type="number" />
             ),
             width: 190,
             description: 'In seconds. Should stay low for critical DBs just in case. NB! For possibly long-running built-in bloat estimation metrics the timeout will be max(30min,$userInput)'
@@ -241,54 +279,28 @@ export const DbsTable = () => {
         },
         {
             field: 'actions',
-            headerName: '',
+            headerName: 'actions',
+            type: 'actions',
             width: 160,
             renderCell: (params: GridRenderCellParams<string>) => (
-                <ActionsComponent uniqueName={params.row.uniqueName}/>
+                <ActionsComponent uniqueName={params.row.uniqueName} />
             )
         }
-    ]
+    ];
 
-    return (
-        <Box sx={{ marginLeft: '10px', marginRight: '10px', height: 400 }}>
-            <Typography variant="h4" component="div" sx={{ flexGrow: 1 }}>
-                Databases under monitoring
-            </Typography>
-            <DataGrid
-                getRowHeight={() => 'auto'}
-                columns={columns}
-                rows={[{
-                    id: 1,
-                    uniqueName: 'test',
-                    dbType: 'patroni',
-                    dbPort: 5433,
-                    dbName: 'diploma',
-                    dbUser: 'cybertec-admin',
-                    dbPassword: 'cybertec-admin',
-                    lastModified: new Date().toUTCString(),
-                    passwordEncryption: 'plain-text',
-                    helpers: true,
-                    sslMode: 'verify-ca',
-                    presetMetricsConf: 'exhaustive',
-                    standbyPresetConf: 'standard'
-                },
-                {
-                    id: 2,
-                    uniqueName: 'test2',
-                    dbType: 'pgpool',
-                    dbPort: 6214,
-                    dbName: 'cybertec-pgwatch2',
-                    dbUser: 'qwertyui12345',
-                    dbPassword: 'qwertyui12345',
-                    lastModified: new Date('2021-08-10T03:24:00').toUTCString(),
-                    passwordEncryption: 'aes-gcm-256',
-                    sslMode: 'verify-full',
-                    presetMetricsConf: 'superuser_no_python',
-                    standbyPresetConf: 'rds'
-                }]}
-                autoHeight
-                pageSize={5}
-            />
-        </Box>
-    )
-}
+    const rows = mockRows; // TODO: get this data from the api
+
+  return (
+    <Box sx={{ height: 400 }} display="flex" flexDirection="column" gap={1}>
+      <Typography variant="h5">
+        Databases under monitoring
+      </Typography>
+      <DataGrid
+        columns={columns}
+        rows={rows}
+        autoHeight
+        pageSize={5}
+      />
+    </Box>
+  );
+};

@@ -1,8 +1,8 @@
 import { useMemo } from "react";
-import { Routes, Route } from "react-router-dom";
 import { Box, Toolbar } from "@mui/material";
-import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { Route, Routes } from "react-router-dom";
 
 import { AppBar } from "./layout/AppBar";
 import { routes } from "./layout/Routes";
@@ -29,7 +29,7 @@ export default function App() {
             flexGrow: 1,
             height: "100vh",
             overflow: "auto",
-            p: 1,
+            p: 2,
           }}
         >
           <Toolbar />

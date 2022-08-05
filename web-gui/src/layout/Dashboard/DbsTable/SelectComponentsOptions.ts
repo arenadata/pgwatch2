@@ -27,7 +27,7 @@ const dbTypeOptions = [
         id: 7,
         label: 'patroni-namespace-discovery'
     },
-]
+];
 
 const passwordEncryptionOptions = [
     {
@@ -38,7 +38,7 @@ const passwordEncryptionOptions = [
         id: 2,
         label: 'aes-gcm-256'
     }
-]
+];
 
 const sslModeOptions = [
     {
@@ -57,7 +57,7 @@ const sslModeOptions = [
         id: 4,
         label: 'verify-full'
     }
-]
+];
 
 const presetConfigsOptions = [
     {
@@ -124,6 +124,6 @@ const presetConfigsOptions = [
         id: 16,
         label: 'unprivileged'
     }
-]
+];
 
-export { dbTypeOptions, passwordEncryptionOptions, sslModeOptions, presetConfigsOptions }
+export { dbTypeOptions, passwordEncryptionOptions, sslModeOptions, presetConfigsOptions };

@@ -1,5 +1,5 @@
-import { Box, TextField } from "@mui/material"
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
+import { Box, TextField } from "@mui/material";
 
 type Params = {
     id: string,
@@ -10,14 +10,14 @@ type Params = {
 }
 
 export const SimpleTextField = ({ id, param, placeholder, defaultValue, type }: Params) => {
-    const [value, setValue] = useState(defaultValue)
+    const [value, setValue] = useState(defaultValue);
 
     useEffect(() => {
         if (param === undefined && defaultValue) {
-            return
+            return;
         }
-        setValue(param)
-    }, [])
+        setValue(param);
+    }, []);
 
     return (
         <Box>
@@ -25,18 +25,18 @@ export const SimpleTextField = ({ id, param, placeholder, defaultValue, type }: 
                 placeholder={placeholder} id={id} variant="standard"
             />
         </Box>
-    )
-}
+    );
+};
 
 export const MultilineTextField = ({ id, param, placeholder, defaultValue, type }: Params) => {
-    const [value, setValue] = useState(defaultValue)
+    const [value, setValue] = useState(defaultValue);
 
     useEffect(() => {
         if (param === undefined && defaultValue) {
-            return
+            return;
         }
-        setValue(param)
-    }, [])
+        setValue(param);
+    }, []);
 
     return (
         <Box>
@@ -44,5 +44,5 @@ export const MultilineTextField = ({ id, param, placeholder, defaultValue, type 
                 placeholder={placeholder} id={id} variant="standard" multiline
             />
         </Box>
-    )
-}
+    );
+};
