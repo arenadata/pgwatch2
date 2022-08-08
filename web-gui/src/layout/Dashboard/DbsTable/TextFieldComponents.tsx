@@ -6,7 +6,7 @@ type Params = {
   param: string | undefined,
   placeholder?: string,
   defaultValue?: string,
-  type: 'text' | 'number' | 'password'
+  type: "text" | "number" | "password"
 }
 
 export const SimpleTextField = ({ id, param, placeholder, defaultValue, type }: Params) => {

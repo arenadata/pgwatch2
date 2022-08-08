@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
-import DeleteIcon from '@mui/icons-material/Delete';
 
 type Params = {
   uniqueName: string
@@ -9,7 +8,6 @@ type Params = {
 
 export const ActionsComponent = ({ uniqueName, handleAlertOpen }: Params) => {
   const [deleteClicked, setDeleteClicked] = useState(false);
-  const [createClicked, setCreateClicked] = useState(false);
 
   const handleDeleteOpen = () => {
     setDeleteClicked(true);
@@ -21,18 +19,6 @@ export const ActionsComponent = ({ uniqueName, handleAlertOpen }: Params) => {
     }
 
     setDeleteClicked(false);
-  };
-
-  const handleCreateClick = () => {
-    setCreateClicked(true);
-  };
-
-  const handleCreateClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === "clickaway") {
-      return;
-    }
-
-    setCreateClicked(false);
   };
 
   if (uniqueName) {
