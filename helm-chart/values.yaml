@@ -204,7 +204,9 @@ grafana:
     tag: latest
 
 metallb:
-  enabled: true
+  # In the latest version metallb helm chart stopped supporing inline configuration
+  # metallb support will be droped for this helm chart
+  enabled: false
   configInline:
     address-pools:
      - name: default
