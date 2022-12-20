@@ -1,8 +1,8 @@
 # Documentation
 
 
-Key                       | Default value          | Description
--------------------------------------------------------------------------------------------------------------------
+Key | Default value | Description
+---|---|---
 storage                   | influx                 | influx or postgres; Defines backend for storing data
 postgres_storage.database | pgwatch2_metrics       | in case if storage is set to postgres, defines database name
 metrics_preset            |                        |
