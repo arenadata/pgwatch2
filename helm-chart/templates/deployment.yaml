@@ -42,7 +42,7 @@ spec:
         - name: PGPASSWORD
           value: {{ .Values.postgresql.password | default "pgwatch2" }}
         - name: PGSSL
-          value: {{ .Values.postgresql.ssl | default "False" | quote }}
+          value: {{ .Values.postgresql.ssl | default "True" | quote }}
         - name: BOOTSTRAP_TYPE
           value: {{ .Values.bootstrap.type0 | default "configdb" | quote }}
 
@@ -65,9 +65,9 @@ spec:
           valueFrom:
             secretKeyRef:
               name: {{ .Values.postgresql.secretname | default (printf "%s-postgresql" (include "pgwatch2.fullname" .)) }}
-              key: postgres-password
+              key: {{ .Values.postgresql.secretkey | default "postgres-password" }}
         - name: PGSSL
-          value: {{ .Values.postgresql.ssl | default "False" | quote }}
+          value: {{ .Values.postgresql.ssl | default "True" | quote }}
         - name: BOOTSTRAP_TYPE
           value: {{ .Values.bootstrap.type1 | default "metricsdb" | quote }}
         - name: BOOTSTRAP_METRICSDB_SCHEMA_TYPE
@@ -92,11 +92,14 @@ spec:
         - name: BOOTSTRAP_DATABASE
           value: {{ .Values.postgresql.database | default "pgwatch2" }}
         - name: PGUSER
-          value: {{ .Values.postgresql.user | default "pgwatch2" }}
+          value: {{ .Values.postgresql.superuser | default "postgres" }}
         - name: PGPASSWORD
-          value: {{ .Values.postgresql.password | default "pgwatch2" }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.postgresql.secretname | default (printf "%s-postgresql" (include "pgwatch2.fullname" .)) }}
+              key: {{ .Values.postgresql.secretkey | default "postgres-password" }}
         - name: PGSSL
-          value: {{ .Values.postgresql.ssl | default "False" | quote }}
+          value: {{ .Values.postgresql.ssl | default "True" | quote }}
         - name: BOOTSTRAP_TYPE
           value: {{ .Values.bootstrap.type | default "configdb" | quote }}
       volumes:
@@ -117,11 +120,14 @@ spec:
         - name: PW2_PGDATABASE
           value: {{ .Values.postgresql.database | default "pgwatch2" }}
         - name: PW2_PGUSER
-          value: {{ .Values.postgresql.user | default "pgwatch2" }}
+          value: {{ .Values.postgresql.superuser | default "postgres" }}
         - name: PW2_PGPASSWORD
-          value: {{ .Values.postgresql.password | default "pgwatch2" }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.postgresql.secretname | default (printf "%s-postgresql" (include "pgwatch2.fullname" .)) }}
+              key: {{ .Values.postgresql.secretkey | default "postgres-password" }}
         - name: PW2_PGSSL
-          value: {{ .Values.postgresql.ssl | default "False" | quote }}
+          value: {{ .Values.postgresql.ssl | default "True" | quote }}
         {{ if eq .Values.storage "influx" }}
         - name: PW2_IHOST
           value: {{ include "pgwatch2.fullname" . }}-influxdb
@@ -130,7 +136,7 @@ spec:
         - name: PW2_IDATABASE
           value: {{ .Values.influxdb.database | default "pgwatch2" }}
         - name: PW2_IUSER
-          value: {{ .Values.influxdb.user | default "pgwatch2" }}
+          value: {{ .Values.influxdb.superuser | default "postgres" }}
         - name: PW2_IPASSWORD
           value: {{ .Values.influxdb.password | default "pgwatch2" }}
         - name: PW2_ISSL
@@ -139,7 +145,7 @@ spec:
         - name: PW2_DATASTORE
           value: {{ .Values.storage | quote }}
         - name: PW2_PG_METRIC_STORE_CONN_STR
-          value: {{ printf "postgresql://%s:%s@%s:%s/%s" (.Values.postgresql.user | default "pgwatch2") (.Values.postgresql.password | default "pgwatch2" ) ( .Values.postgresql.host | default (printf "%s-postgresql" (include "pgwatch2.fullname" .))) (.Values.postgresql.port | default "5432")  (.Values.postgres_storage.database | default "pgwatch2_metrics" ) }}
+          value: {{ printf "postgresql://%s:%s@%s:%s/%s?sslmode=%s" (.Values.postgresql.user | default "pgwatch2") (.Values.postgresql.password | default "pgwatch2" ) ( .Values.postgresql.host | default (printf "%s-postgresql" (include "pgwatch2.fullname" .))) (.Values.postgresql.port | default "5432")  (.Values.postgres_storage.database | default "pgwatch2_metrics" ) (.Values.postgresql.ssl | default "require") }} 
         - name: PW2_PG_RETENTION_DAYS
           value: {{ .Values.postgres_storage.retention_days | default "14" | quote }}
         {{ end }}
@@ -193,11 +199,14 @@ spec:
           - name: PW2_PGDATABASE
             value: {{ .Values.postgresql.database | default "pgwatch2" }}
           - name: PW2_PGUSER
-            value: {{ .Values.postgresql.user | default "pgwatch2" }}
+            value: {{ .Values.postgresql.superuser | default "postgres" }}
           - name: PW2_PGPASSWORD
-            value: {{ .Values.postgresql.password | default "pgwatch2" }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.postgresql.secretname | default (printf "%s-postgresql" (include "pgwatch2.fullname" .)) }}
+                key: {{ .Values.postgresql.secretkey | default "postgres-password" }}
           - name: PW2_PGSSL
-            value: {{ .Values.postgresql.ssl | default "False" | quote}}
+            value: {{ .Values.postgresql.ssl | default "True" | quote}}
           {{ if eq .Values.storage "influx" }}
           - name: PW2_IHOST
             value: {{ include "pgwatch2.fullname" . }}-influxdb
@@ -215,7 +224,7 @@ spec:
           - name: PW2_DATASTORE
             value: {{ .Values.storage | quote }}
           - name: PW2_PG_METRIC_STORE_CONN_STR
-            value: {{ printf "postgresql://%s:%s@%s:%s/%s" (.Values.postgresql.user | default "pgwatch2") (.Values.postgresql.password | default "pgwatch2" ) ( .Values.postgresql.host | default (printf "%s-postgresql" (include "pgwatch2.fullname" .))) (.Values.postgresql.port | default "5432")  (.Values.postgres_storage.database | default "pgwatch2_metrics" ) }}
+            value: {{ printf "postgresql://%s:%s@%s:%s/%s?sslmode=%s" (.Values.postgresql.user | default "pgwatch2") (.Values.postgresql.password | default "pgwatch2" ) ( .Values.postgresql.host | default (printf "%s-postgresql" (include "pgwatch2.fullname" .))) (.Values.postgresql.port | default "5432")  (.Values.postgres_storage.database | default "pgwatch2_metrics" ) (.Values.postgresql.ssl | default "require") }} 
           - name: PW2_PG_RETENTION_DAYS
             value: {{ .Values.postgres_storage.retention_days | default "14" | quote }}
           {{ end }}

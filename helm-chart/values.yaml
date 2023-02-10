@@ -1,4 +1,4 @@
-storage: influx
+storage: postgres
 # Only required if storage is postgres
 postgres_storage:
   database: &metricsdatabase pgwatch2_metrics
@@ -42,7 +42,20 @@ bootstrap:
     repository: cybertec/pgwatch2-db-bootstrapper
     tag: latest
 
+timescaledb-single:
+  fullnameOverride: pgwatch2-postgresql
+  
+  postInit:
+    - configMap:
+        name: pgwatch2-initdb
+        optional: false
+  secrets:
+    credentials:
+      PATRONI_pgwatch2_PASSWORD: "pgwatch2"
 postgresql:
+  enabled: true
+  auth:
+    postgresPassword: pgwatch2
   user: &postgresuser pgwatch2
   password: &postgrespassword pgwatch2
   primary:
@@ -50,9 +63,11 @@ postgresql:
       # This value file assumes that we are installing the helm chart with the name "pgwatch2"
       # replace pgwatch2 with the name you are installing the chart.
       scriptsConfigMap: pgwatch2-initdb
+  secretname: pgwatch2-postgresql-credentials
+  secretkey: PATRONI_SUPERUSER_PASSWORD
 
 influxdb:
-  enabled: true
+  enabled: false
   service:
     type: ClusterIP
 
@@ -171,45 +186,22 @@ grafana:
     datasources.yaml:
       apiVersion: 1
       datasources:
-      - name: InfluxDB_v1
-        type: influxdb
-        access: proxy
-        url: http://pgwatch2-influxdb:8086
+      - name: Postgres
+        type: postgres
+        url: pgwatch2-postgresql:5432
         isDefault: true
-        database: pgwatch2
-        user: pgwatch2
-        jsonData:
-          httpMode: GET
+        database: *metricsdatabase
+        user: *postgresuser
         secureJsonData:
-          password: pgwatch2
-      ## Postgresql
-      # - name: Postgres
-      #   type: postgres
-      #   url: pgwatch2-postgresql:5432
-      #   isDefault: true
-      #   database: *metricsdatabase
-      #   user: *postgresuser
-      #   secureJsonData:
-      #     password: *postgrespassword
-      #   jsonData:
-      #     sslmode: 'disable' # disable/require/verify-ca/verify-full
-      #     maxOpenConns: 0 # Grafana v5.4+
-      #     maxIdleConns: 2 # Grafana v5.4+
-      #     connMaxLifetime: 14400 # Grafana v5.4+
-      #     postgresVersion: 1200 # 903=9.3, 904=9.4, 905=9.5, 906=9.6, 1000=10
-      #     timescaledb: false
+          password: *postgrespassword
+        jsonData:
+          sslmode: 'require' # disable/require/verify-ca/verify-full
+          maxOpenConns: 0 # Grafana v5.4+
+          maxIdleConns: 2 # Grafana v5.4+
+          connMaxLifetime: 14400 # Grafana v5.4+
+          postgresVersion: 1400 # 903=9.3, 904=9.4, 905=9.5, 906=9.6, 1000=10
+          timescaledb: true
 
   image:
     repository: grafana/grafana
-    tag: latest
-
-metallb:
-  # In the latest version metallb helm chart stopped supporing inline configuration
-  # metallb support will be droped for this helm chart
-  enabled: false
-  configInline:
-    address-pools:
-     - name: default
-       protocol: layer2
-       addresses:
-       - 192.168.49.10-192.168.49.250
+    tag: 8.5.16
