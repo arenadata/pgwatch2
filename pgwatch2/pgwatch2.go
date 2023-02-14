@@ -4587,7 +4587,7 @@ func GetMonitoredDatabasesFromMonitoringConfig(mc []MonitoredDatabase) []Monitor
 			log.Warningf("Ignoring host \"%s\" as \"dbname\" attribute not specified but required by dbtype=postgres", e.DBUniqueName)
 			continue
 		}
-		if len(e.DBName) == 0 || e.DBType == DBTYPE_PG_CONT || e.DBType == DBTYPE_PATRONI || e.DBType == DBTYPE_PATRONI_CONT || e.DBType == DBTYPE_PATRONI_NAMESPACE_DISCOVERY {
+		if len(e.DBName) == 0 && (e.DBType == DBTYPE_PG_CONT || e.DBType == DBTYPE_PATRONI || e.DBType == DBTYPE_PATRONI_CONT || e.DBType == DBTYPE_PATRONI_NAMESPACE_DISCOVERY) {
 			if e.DBType == DBTYPE_PG_CONT {
 				log.Debugf("Adding \"%s\" (host=%s, port=%s) to continuous monitoring ...", e.DBUniqueName, e.Host, e.Port)
 			}
