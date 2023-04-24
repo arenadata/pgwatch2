@@ -29,6 +29,8 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/jackc/pgx/stdlib"
+
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
 
@@ -395,7 +397,7 @@ func GetPostgresDBConnection(libPqConnString, host, port, dbname, user, password
 		}
 	}
 
-	return sqlx.Open("postgres", connStr)
+	return sqlx.Open("pgx", connStr)
 }
 
 func StringToBoolOrFail(boolAsString, inputParamName string) bool {
@@ -1205,23 +1207,12 @@ func SendToPostgres(storeMessages []MetricStoreMessage) error {
 	}()
 
 	for metricName, metrics := range metricsToStorePerMetric {
-		var stmt *go_sql.Stmt
-
+		metricInsert := ``
 		if PGSchemaType == "custom" {
-			stmt, err = txn.Prepare(pq.CopyIn("metrics", "time", "dbname", "metric", "data", "tag_data"))
-			if err != nil {
-				log.Error("Could not prepare COPY to 'metrics' table:", err)
-				atomic.AddUint64(&datastoreWriteFailuresCounter, 1)
-				return err
-			}
+			metricInsert = `INSERT INTO metrics (time, dbname, metric, data, tag_data) VALUES ($1, $2, $3, $4, $5)`
 		} else {
 			log.Debugf("COPY-ing %d rows into '%s'...", len(metrics), metricName)
-			stmt, err = txn.Prepare(pq.CopyIn(metricName, "time", "dbname", "data", "tag_data"))
-			if err != nil {
-				log.Errorf("Could not prepare COPY to '%s' table: %v", metricName, err)
-				atomic.AddUint64(&datastoreWriteFailuresCounter, 1)
-				return err
-			}
+			metricInsert = `INSERT INTO ` + metricName + ` (time, dbname, data, tag_data) VALUES ($1, $2, $3, $4)`
 		}
 
 		for _, m := range metrics {
@@ -1237,33 +1228,33 @@ func SendToPostgres(storeMessages []MetricStoreMessage) error {
 				if err != nil {
 					log.Errorf("Skipping 1 metric for [%s:%s] due to JSON conversion error: %s", m.DBName, m.Metric, err)
 					atomic.AddUint64(&datastoreWriteFailuresCounter, 1)
-					goto stmt_close
+					goto txn_err
 				}
 				if PGSchemaType == "custom" {
-					_, err = stmt.Exec(m.Time, m.DBName, m.Metric, string(jsonBytes), string(jsonBytesTags))
+					_, err = txn.Exec(metricInsert, m.Time, m.DBName, m.Metric, string(jsonBytes), string(jsonBytesTags))
+
 				} else {
-					_, err = stmt.Exec(m.Time, m.DBName, string(jsonBytes), string(jsonBytesTags))
+					_, err = txn.Exec(metricInsert, m.Time, m.DBName, string(jsonBytes), string(jsonBytesTags))
 				}
 				if err != nil {
 					log.Errorf("Formatting metric %s data to COPY format failed for %s: %v ", m.Metric, m.DBName, err)
 					atomic.AddUint64(&datastoreWriteFailuresCounter, 1)
-					goto stmt_close
+					goto txn_err
 				}
 			} else {
 				if PGSchemaType == "custom" {
-					_, err = stmt.Exec(m.Time, m.DBName, m.Metric, string(jsonBytes), nil)
+					_, err = txn.Exec(metricInsert, m.Time, m.DBName, m.Metric, string(jsonBytes), nil)
 				} else {
-					_, err = stmt.Exec(m.Time, m.DBName, string(jsonBytes), nil)
+					_, err = txn.Exec(metricInsert, m.Time, m.DBName, string(jsonBytes), nil)
 				}
 				if err != nil {
 					log.Errorf("Formatting metric %s data to COPY format failed for %s: %v ", m.Metric, m.DBName, err)
 					atomic.AddUint64(&datastoreWriteFailuresCounter, 1)
-					goto stmt_close
+					goto txn_err
 				}
 			}
 		}
 
-		_, err = stmt.Exec()
 		if err != nil {
 			log.Error("COPY to Postgres failed:", err)
 			atomic.AddUint64(&datastoreWriteFailuresCounter, 1)
@@ -1272,10 +1263,9 @@ func SendToPostgres(storeMessages []MetricStoreMessage) error {
 				forceRecreatePGMetricPartitions = true
 			}
 		}
-	stmt_close:
-		err = stmt.Close()
+	txn_err:
 		if err != nil {
-			log.Error("stmt.Close() failed:", err)
+			log.Error("txn.Exec() error: ", err)
 		}
 	}
 
