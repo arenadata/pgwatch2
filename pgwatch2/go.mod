@@ -22,6 +22,14 @@ require (
 )
 
 require (
+	github.com/cockroachdb/apd v1.1.0 // indirect
+	github.com/gofrs/uuid v4.4.0+incompatible // indirect
+	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	golang.org/x/text v0.7.0 // indirect
+)
+
+require (
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -37,6 +45,7 @@ require (
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/serf v0.10.1 // indirect
+	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/lufia/plan9stats v0.0.0-20220913051719-115f729f3c8c // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
