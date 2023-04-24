@@ -29,18 +29,18 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/shirou/gopsutil/v3/disk"
-	"github.com/shirou/gopsutil/v3/mem"
-
 	"github.com/coreos/go-systemd/daemon"
 	client "github.com/influxdata/influxdb1-client/v2"
+	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jessevdk/go-flags"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 	"github.com/marpaia/graphite-golang"
 	"github.com/op/go-logging"
 	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/load"
+	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/shopspring/decimal"
 	"golang.org/x/crypto/pbkdf2"
 	"gopkg.in/yaml.v2"
@@ -395,7 +395,7 @@ func GetPostgresDBConnection(libPqConnString, host, port, dbname, user, password
 		}
 	}
 
-	return sqlx.Open("postgres", connStr)
+	return sqlx.Open("pgx", connStr)
 }
 
 func StringToBoolOrFail(boolAsString, inputParamName string) bool {
