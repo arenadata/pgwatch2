@@ -741,16 +741,18 @@ func DBExecReadByDbUniqueName(dbUnique, metricName string, stmtTimeoutOverride i
 	}
 
 	sqlToExec := sqlLockTimeout + sqlStmtTimeout + sql // bundle timeouts with actual SQL to reduce round-trip times
-	//log.Errorf("Executing SQL: %s", sqlToExec)
+	//log.Debugf("Executing SQL: %s", sqlToExec)
 	t1 := time.Now()
 	if useConnPooling {
 		data, err = DBExecInExplicitTX(conn, dbUnique, sqlToExec, args...)
 	} else {
 		if IsPostgresDBType(md.DBType) {
-			data, err = DBExecRead(conn, dbUnique, sqlLockTimeout, nil)
-			data, err = DBExecRead(conn, dbUnique, sqlStmtTimeout, nil)
+			_, errLockTimeout := DBExecRead(conn, dbUnique, sqlLockTimeout, nil)
+			_, errStmtTimeout := DBExecRead(conn, dbUnique, sqlStmtTimeout, nil)
+			if errLockTimeout != nil || errStmtTimeout != nil {
+				log.Warningf("DBExecRead failed with err: %s, %s", errLockTimeout, errStmtTimeout)
+			}
 			data, err = DBExecRead(conn, dbUnique, sql, args...)
-
 		} else {
 			for _, sql := range strings.Split(sqlToExec, ";") {
 				sql = strings.TrimSpace(sql)
