@@ -748,15 +748,15 @@ func DBExecReadByDbUniqueName(dbUnique, metricName string, stmtTimeoutOverride i
 	} else {
 		if IsPostgresDBType(md.DBType) {
 			if sqlLockTimeout != "" {
-				_, err := DBExecRead(conn, dbUnique, sqlLockTimeout, nil)
+				_, err := DBExecRead(conn, dbUnique, sqlLockTimeout, args...)
 				if err != nil {
-					log.Warningf("DBExecRead failed with err: %s", err)
+					log.Warningf("DBExecRead failed with err: %s", err, sqlLockTimeout)
 				}
 			}
 			if sqlStmtTimeout != "" {
-				_, err := DBExecRead(conn, dbUnique, sqlStmtTimeout, nil)
+				_, err := DBExecRead(conn, dbUnique, sqlStmtTimeout, args...)
 				if err != nil {
-					log.Warningf("DBExecRead failed with err: %s", err)
+					log.Warningf("DBExecRead failed with err: %s", err, sqlStmtTimeout)
 				}
 			}
 			data, err = DBExecRead(conn, dbUnique, sql, args...)
