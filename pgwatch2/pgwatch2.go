@@ -731,7 +731,7 @@ func DBExecReadByDbUniqueName(dbUnique, metricName string, stmtTimeoutOverride i
 			return nil, err, duration
 		}
 	}
-
+	log.Errorf("TYPE: %s", md.DBType)
 	if !useConnPooling {
 		if IsPostgresDBType(md.DBType) {
 			sqlLockTimeout = "SET lock_timeout TO '100ms';"
@@ -744,9 +744,11 @@ func DBExecReadByDbUniqueName(dbUnique, metricName string, stmtTimeoutOverride i
 	//log.Debugf("Executing SQL: %s", sqlToExec)
 	t1 := time.Now()
 	if useConnPooling {
+		log.Errorf("1\n\n")
 		data, err = DBExecInExplicitTX(conn, dbUnique, sqlToExec, args...)
 	} else {
 		if IsPostgresDBType(md.DBType) {
+			log.Errorf("2\n\n")
 			if sqlLockTimeout != "" {
 				_, err := DBExecRead(conn, dbUnique, sqlLockTimeout, args...)
 				if err != nil {
@@ -761,6 +763,7 @@ func DBExecReadByDbUniqueName(dbUnique, metricName string, stmtTimeoutOverride i
 			}
 			data, err = DBExecRead(conn, dbUnique, sql, args...)
 		} else {
+			log.Errorf("3\n\n")
 			for _, sql := range strings.Split(sqlToExec, ";") {
 				sql = strings.TrimSpace(sql)
 				log.Errorf("SQL is: %s", sql)
@@ -774,7 +777,7 @@ func DBExecReadByDbUniqueName(dbUnique, metricName string, stmtTimeoutOverride i
 	if err != nil {
 		atomic.AddUint64(&totalMetricFetchFailuresCounter, 1)
 	}
-
+	log.Errorf("4\n\n")
 	return data, err, t2.Sub(t1)
 }
 
