@@ -397,11 +397,11 @@ func GetPostgresDBConnection(libPqConnString, host, port, dbname, user, password
 		}
 	}
 
-	if dbtype == DBTYPE_BOUNCER {
-		connConfig, _ := pgx.ParseConfig(connStr)
-		connConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
-		connStr = pgx_stdlib.RegisterConnConfig(connConfig)
-	}
+	//if dbtype == DBTYPE_BOUNCER {
+	connConfig, _ := pgx.ParseConfig(connStr)
+	connConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
+	connStr = pgx_stdlib.RegisterConnConfig(connConfig)
+	//}
 
 	return sqlx.Open("pgx", connStr)
 }
