@@ -2949,9 +2949,9 @@ func FilterPgbouncerData(data []map[string]interface{}, databaseToKeep string, v
 				if k == "tag_database" {
 					continue
 				}
-				decimalCounter, err := decimal.NewFromString(string(v.([]uint8)))
+				decimalCounter, err := decimal.NewFromString(v.(string))
 				if err != nil {
-					log.Errorf("Could not parse \"%+v\" to Decimal: %s", string(v.([]uint8)), err)
+					log.Errorf("Could not parse \"%+v\" to Decimal: %s", v.(string), err)
 					return filtered_data
 				}
 				dr[k] = decimalCounter.IntPart() // technically could cause overflow...but highly unlikely for 2^63
