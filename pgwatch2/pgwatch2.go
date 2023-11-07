@@ -4891,7 +4891,7 @@ func getPathUnderlyingDeviceId(path string) (uint64, error) {
 		return 0, err
 	}
 	stat := fi.Sys().(*syscall.Stat_t)
-	return stat.Dev, nil
+	return uint64(stat.Dev), nil
 }
 
 // connects actually to the instance to determine PG relevant disk paths / mounts
