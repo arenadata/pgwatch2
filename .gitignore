@@ -16,3 +16,5 @@ dist
 
 # delve debugger file
 debug
+
+pgwatch2/vendor/*

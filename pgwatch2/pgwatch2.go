@@ -29,8 +29,8 @@ import (
 	"syscall"
 	"time"
 
-	_ "github.com/jackc/pgx/stdlib"
-
+	"github.com/jackc/pgx/v5"
+	pgx_stdlib "github.com/jackc/pgx/v5/stdlib"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
 
@@ -361,7 +361,7 @@ func IsPostgresDBType(dbType string) bool {
 	return true
 }
 
-func GetPostgresDBConnection(libPqConnString, host, port, dbname, user, password, sslmode, sslrootcert, sslcert, sslkey string) (*sqlx.DB, error) {
+func GetPostgresDBConnection(libPqConnString, host, port, dbname, user, password, sslmode, sslrootcert, sslcert, sslkey, dbtype string) (*sqlx.DB, error) {
 	var connStr string
 
 	//log.Debug("Connecting to: ", host, port, dbname, user, password)
@@ -397,6 +397,12 @@ func GetPostgresDBConnection(libPqConnString, host, port, dbname, user, password
 		}
 	}
 
+	if dbtype == DBTYPE_BOUNCER {
+		connConfig, _ := pgx.ParseConfig(connStr)
+		connConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
+		connStr = pgx_stdlib.RegisterConnConfig(connConfig)
+	}
+
 	return sqlx.Open("pgx", connStr)
 }
 
@@ -428,7 +434,7 @@ func InitAndTestConfigStoreConnection(host, port, dbname, user, password, requir
 
 	for i := 0; i <= retries; i++ {
 		// configDb is used by the main thread only. no verify-ca/verify-full support currently
-		configDb, err = GetPostgresDBConnection("", host, port, dbname, user, password, SSLMode, "", "", "")
+		configDb, err = GetPostgresDBConnection("", host, port, dbname, user, password, SSLMode, "", "", "", "")
 		if err != nil {
 			if i < retries {
 				log.Errorf("could not open metricDb connection. retrying in 5s. %d retries left. err: %v", retries-i, err)
@@ -474,7 +480,7 @@ func InitAndTestMetricStoreConnection(connStr string, failOnErr bool) error {
 
 	for i := 0; i <= retries; i++ {
 
-		metricDb, err = GetPostgresDBConnection(connStr, "", "", "", "", "", "", "", "", "")
+		metricDb, err = GetPostgresDBConnection(connStr, "", "", "", "", "", "", "", "", "", "")
 		if err != nil {
 			if i < retries {
 				log.Errorf("could not open metricDb connection. retrying in 5s. %d retries left. err: %v", retries-i, err)
@@ -528,7 +534,7 @@ func InitSqlConnPoolForMonitoredDBIfNil(md MonitoredDatabase) error {
 	}
 
 	conn, err := GetPostgresDBConnection(md.LibPQConnStr, md.Host, md.Port, md.DBName, md.User, md.Password,
-		md.SslMode, md.SslRootCAPath, md.SslClientCertPath, md.SslClientKeyPath)
+		md.SslMode, md.SslRootCAPath, md.SslClientCertPath, md.SslClientKeyPath, md.DBType)
 	if err != nil {
 		return err
 	}
@@ -4499,7 +4505,7 @@ func ResolveDatabasesFromConfigEntry(ce MonitoredDatabase) ([]MonitoredDatabase,
 
 	for _, templateDB := range templateDBsToTry {
 		c, err = GetPostgresDBConnection(ce.LibPQConnStr, ce.Host, ce.Port, templateDB, ce.User, ce.Password,
-			ce.SslMode, ce.SslRootCAPath, ce.SslClientCertPath, ce.SslClientKeyPath)
+			ce.SslMode, ce.SslRootCAPath, ce.SslClientCertPath, ce.SslClientKeyPath, ce.DBType)
 		if err != nil {
 			return md, err
 		}

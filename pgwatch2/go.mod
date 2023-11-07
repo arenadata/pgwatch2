@@ -6,6 +6,7 @@ require (
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf
 	github.com/hashicorp/consul/api v1.18.0
 	github.com/influxdata/influxdb1-client v0.0.0-20220302092344-a9ab5670611c
+	github.com/jackc/pgx/v5 v5.5.0
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.10.7
@@ -17,17 +18,11 @@ require (
 	github.com/shopspring/decimal v1.3.1
 	go.etcd.io/etcd v3.3.27+incompatible
 	go.etcd.io/etcd/client/v2 v2.305.7
-	golang.org/x/crypto v0.6.0
+	golang.org/x/crypto v0.9.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-require (
-	github.com/cockroachdb/apd v1.1.0 // indirect
-	github.com/gofrs/uuid v4.4.0+incompatible // indirect
-	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
-	golang.org/x/text v0.7.0 // indirect
-)
+require golang.org/x/text v0.9.0 // indirect
 
 require (
 	github.com/armon/go-metrics v0.4.1 // indirect
@@ -45,7 +40,9 @@ require (
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/serf v0.10.1 // indirect
-	github.com/jackc/pgx v3.6.2+incompatible
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
+	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/lufia/plan9stats v0.0.0-20220913051719-115f729f3c8c // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
@@ -59,11 +56,13 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.39.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
+	github.com/rogpeppe/go-internal v1.6.1 // indirect
 	github.com/tklauser/go-sysconf v0.3.11 // indirect
 	github.com/tklauser/numcpus v0.6.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.7 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.7 // indirect
-	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/sync v0.1.0 // indirect
+	golang.org/x/sys v0.8.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )
