@@ -398,7 +398,11 @@ func GetPostgresDBConnection(libPqConnString, host, port, dbname, user, password
 	}
 
 	if dbtype == DBTYPE_BOUNCER {
-		connConfig, _ := pgx.ParseConfig(connStr)
+		connConfig, err := pgx.ParseConfig(connStr)
+		if err != nil {
+			log.Errorf("Cannot parse config for pgbouncer: ", err)
+			return nil, err
+		}
 		connConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
 		connStr = pgx_stdlib.RegisterConnConfig(connConfig)
 	}
@@ -4595,7 +4599,7 @@ func GetMonitoredDatabasesFromMonitoringConfig(mc []MonitoredDatabase) []Monitor
 			log.Warningf("Ignoring host \"%s\" as \"dbname\" attribute not specified but required by dbtype=postgres", e.DBUniqueName)
 			continue
 		}
-		if len(e.DBName) == 0 || e.DBType == DBTYPE_PG_CONT || e.DBType == DBTYPE_PATRONI || e.DBType == DBTYPE_PATRONI_CONT || e.DBType == DBTYPE_PATRONI_NAMESPACE_DISCOVERY {
+		if len(e.DBName) == 0 && e.DBType == DBTYPE_PG_CONT || e.DBType == DBTYPE_PATRONI || e.DBType == DBTYPE_PATRONI_CONT || e.DBType == DBTYPE_PATRONI_NAMESPACE_DISCOVERY {
 			if e.DBType == DBTYPE_PG_CONT {
 				log.Debugf("Adding \"%s\" (host=%s, port=%s) to continuous monitoring ...", e.DBUniqueName, e.Host, e.Port)
 			}
