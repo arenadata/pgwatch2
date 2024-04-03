@@ -1,2 +1,4 @@
 ---
 metric_storage_name: stat_statements
+prerequisite_extensions:
+  - pg_stat_statements

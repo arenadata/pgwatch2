@@ -18,6 +18,69 @@ ther pre-built packages) folder. Also it is highly recommended to refresh all th
 For that there's also a refresh_metrics_from_github.sh script provided. YAML based setups don't need any extra actions besides
 refreshing from Git or installing the new RPM / DEB / Tar packages.
 
+## v1.12.0 [2023-12-28]
+What's Changed
+
+* [!] bump Go to v1.21 by @pashagolub in #729
+* [!] update "Biggest relations treemap" dashboard plugin, fixes #579 #496 #293 #197 by @pashagolub in #727
+* [+] add `sent_lag` and `confirmed_flush_lsn_lag` fields to replication metrics by @bukem in #700
+* [+] add new metrics for invalid and unused indexes by @kmoppel-cognite in #691
+* [+] bump `actions/checkout` from 3 to 4 by @dependabot in #680
+* [+] bump `actions/setup-go` from 4 to 5 by @dependabot in #721
+* [+] bump `actions/stale` from 8 to 9 by @dependabot in #723
+* [+] bump `docker/setup-buildx-action` from 2 to 3 by @dependabot in #684
+* [+] bump `docker/setup-qemu-action` from 2 to 3 by @dependabot in #683
+* [+] bump `github/codeql-action` from 2 to 3 by @dependabot in #724
+* [+] bump `go.etcd.io/etcd/client/v2` from 2.305.9 to 2.305.11 by @dependabot in #704 #722
+* [+] bump `golang.org/x/crypto` from 0.12.0 to 0.17.0 by @dependabot in #681 #697 #708 #715 #726
+* [+] bump `goreleaser/goreleaser-action` from 4 to 5 by @dependabot in #685
+* [+] bump `hashicorp/consul/api` from 1.24.0 to 1.26.1 by @dependabot in #686 #688 #706
+* [+] bump `prometheus/client_golang` from 1.16.0 to 1.18.0 by @dependabot in #692 #728
+* [+] bump `shirou/gopsutil/v3` from 3.23.7 to 3.23.11 by @dependabot in #678 #693 #705 #718
+
+New Contributors
+    @bukem made their first contribution in #700
+
+## v1.11.0 [2023-08-18]
+What's Changed
+
+* `[!]` bump PostgreSQL to v15, Grafana to v8.5.20, Go to v1.20 in Docker images by @pashagolub in #601
+* `[!]` add metrics for PostgreSQL 16 by @kmoppel-cognite in #669
+* `[+]` update README.md to show support of PG15 by @kdaveid in #664
+* `[+]` bump Go to v1.20 by @pashagolub in #605
+* `[+]` bump shirou/gopsutil/v3 from 3.22.12 to 3.23.7 by @dependabot in #667 #662 #648 #635 #615 #593
+* `[+]` bump prometheus/client_golang from 1.14.0 to 1.16.0 by @dependabot in #654 #636 #627
+* `[+]` bump lib/pq from 1.10.7 to 1.10.9 by @dependabot in #633 #628
+* `[+]` bump hashicorp/consul/api from 1.18.0 to 1.24.0 by @dependabot in #670 #666 #661 #651 #617 #609
+* `[+]` bump golang.org/x/crypto from 0.5.0 to 0.12.0 by @dependabot in #671 #663 #653 #638 #624 #616 #596
+* `[+]` bump go.etcd.io/etcd/client/v2 from 2.305.7 to 2.305.9 by @dependabot in #640 #626 #591
+* `[+]` bump actions/stale from 7 to 8 by @dependabot in #619
+* `[+]` bump actions/setup-go from 3 to 4 by @dependabot in #618
+* `[+]` allow to specify multi-host connection string for configDB with target_session_attrs by @krisavi in #647
+* `[+]` allow .pgpass lookup for web UI by @krisavi in #646
+* `[+]` add lag in milliseconds to replication metrics by @kmoppel-cognite in #607
+* `[+]` add Docker GHA workflow to update "latest" images, closes #602 by @pashagolub in #603
+* `[+]` add "prerequisite extensions" support for metric definitions by @kmoppel-cognite in #643
+* `[*]` fix cert_key to key_file on host_config by @krisavi in #608
+* `[-]` fix timeline ID conversion in wal metric from hexadecimal to decimal by @slardiere in #604
+* `[-]` fix invalid target_session_attrs value in WebUI URI, fixes #674 by @pashagolub in #675
+* `[-]` fix helm chart affinity, toleration, nodeSelector and extraVolumes for daemon container by @pmpetit in #631
+* `[-]` fix grafana v8 invalid url parameter panelId with new viewPanel by @FireEmerald in #620
+* `[-]` fix dashboard typos by @AlicjaKucharczyk in #668
+* `[-]` fix connection string parsing for postgres-continuous-discovery, closes #584 by @chromko in #585
+* `[-]` fix pgwatch2-postgres Docker image by @frastr in #606
+* `[-]` fix "invalid command 'BEGIN READ WRITE'" error when '--conn-pooling' option is on by @IlyaTsoi in #586
+* `[-]` ensure bootstrap of a timescale metrics db includes necessary metric-time function by @dtmdl in #592
+* `[-]` add pgwatch2-webui target to the Release GHA workflow, fixes #597 by @pashagolub in #598
+
+New Contributors
+
+    @krisavi made their first contribution in #608
+    @chromko made their first contribution in #585
+    @FireEmerald made their first contribution in #620
+    @kdaveid made their first contribution in #664
+    @AlicjaKucharczyk made their first contribution in #668
+
 ## v1.9.0 [2022-04-25]
 
 Main changes:
