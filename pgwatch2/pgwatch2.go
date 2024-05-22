@@ -29,6 +29,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+	pgx_stdlib "github.com/jackc/pgx/v5/stdlib"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
 
@@ -360,7 +362,7 @@ func IsPostgresDBType(dbType string) bool {
 	return true
 }
 
-func GetPostgresDBConnection(libPqConnString, host, port, dbname, user, password, sslmode, sslrootcert, sslcert, sslkey string) (*sqlx.DB, error) {
+func GetPostgresDBConnection(libPqConnString, host, port, dbname, user, password, sslmode, sslrootcert, sslcert, sslkey, dbtype string) (*sqlx.DB, error) {
 	var connStr string
 
 	//log.Debug("Connecting to: ", host, port, dbname, user, password)
@@ -396,7 +398,17 @@ func GetPostgresDBConnection(libPqConnString, host, port, dbname, user, password
 		}
 	}
 
-	return sqlx.Open("postgres", connStr)
+	if dbtype == DBTYPE_BOUNCER {
+		connConfig, err := pgx.ParseConfig(connStr)
+		if err != nil {
+			log.Errorf("Cannot parse config for pgbouncer: ", err)
+			return nil, err
+		}
+		connConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
+		connStr = pgx_stdlib.RegisterConnConfig(connConfig)
+	}
+
+	return sqlx.Open("pgx", connStr)
 }
 
 func StringToBoolOrFail(boolAsString, inputParamName string) bool {
@@ -427,7 +439,7 @@ func InitAndTestConfigStoreConnection(host, port, dbname, user, password, requir
 
 	for i := 0; i <= retries; i++ {
 		// configDb is used by the main thread only. no verify-ca/verify-full support currently
-		configDb, err = GetPostgresDBConnection("", host, port, dbname, user, password, SSLMode, "", "", "")
+		configDb, err = GetPostgresDBConnection("", host, port, dbname, user, password, SSLMode, "", "", "", "")
 		if err != nil {
 			if i < retries {
 				log.Errorf("could not open metricDb connection. retrying in 5s. %d retries left. err: %v", retries-i, err)
@@ -473,7 +485,7 @@ func InitAndTestMetricStoreConnection(connStr string, failOnErr bool) error {
 
 	for i := 0; i <= retries; i++ {
 
-		metricDb, err = GetPostgresDBConnection(connStr, "", "", "", "", "", "", "", "", "")
+		metricDb, err = GetPostgresDBConnection(connStr, "", "", "", "", "", "", "", "", "", "")
 		if err != nil {
 			if i < retries {
 				log.Errorf("could not open metricDb connection. retrying in 5s. %d retries left. err: %v", retries-i, err)
@@ -527,7 +539,7 @@ func InitSqlConnPoolForMonitoredDBIfNil(md MonitoredDatabase) error {
 	}
 
 	conn, err := GetPostgresDBConnection(md.LibPQConnStr, md.Host, md.Port, md.DBName, md.User, md.Password,
-		md.SslMode, md.SslRootCAPath, md.SslClientCertPath, md.SslClientKeyPath)
+		md.SslMode, md.SslRootCAPath, md.SslClientCertPath, md.SslClientKeyPath, md.DBType)
 	if err != nil {
 		return err
 	}
@@ -746,7 +758,19 @@ func DBExecReadByDbUniqueName(dbUnique, metricName string, stmtTimeoutOverride i
 		if useConnPooling {
 			data, err = DBExecInExplicitTX(conn, dbUnique, sqlToExec, args...)
 		} else {
-			data, err = DBExecRead(conn, dbUnique, sqlToExec, args...)
+			if sqlLockTimeout != "" {
+				_, err := DBExecRead(conn, dbUnique, sqlLockTimeout, args...)
+				if err != nil {
+					log.Warningf("DBExecRead failed with err: %s", err, sqlLockTimeout)
+				}
+			}
+			if sqlStmtTimeout != "" {
+				_, err := DBExecRead(conn, dbUnique, sqlStmtTimeout, args...)
+				if err != nil {
+					log.Warningf("DBExecRead failed with err: %s", err, sqlStmtTimeout)
+				}
+			}
+			data, err = DBExecRead(conn, dbUnique, sql, args...)
 		}
 	} else {
 		for _, sql := range strings.Split(sqlToExec, ";") {
@@ -1206,23 +1230,12 @@ func SendToPostgres(storeMessages []MetricStoreMessage) error {
 	}()
 
 	for metricName, metrics := range metricsToStorePerMetric {
-		var stmt *go_sql.Stmt
-
+		metricInsert := ``
 		if PGSchemaType == "custom" {
-			stmt, err = txn.Prepare(pq.CopyIn("metrics", "time", "dbname", "metric", "data", "tag_data"))
-			if err != nil {
-				log.Error("Could not prepare COPY to 'metrics' table:", err)
-				atomic.AddUint64(&datastoreWriteFailuresCounter, 1)
-				return err
-			}
+			metricInsert = `INSERT INTO metrics (time, dbname, metric, data, tag_data) VALUES ($1, $2, $3, $4, $5)`
 		} else {
 			log.Debugf("COPY-ing %d rows into '%s'...", len(metrics), metricName)
-			stmt, err = txn.Prepare(pq.CopyIn(metricName, "time", "dbname", "data", "tag_data"))
-			if err != nil {
-				log.Errorf("Could not prepare COPY to '%s' table: %v", metricName, err)
-				atomic.AddUint64(&datastoreWriteFailuresCounter, 1)
-				return err
-			}
+			metricInsert = `INSERT INTO ` + metricName + ` (time, dbname, data, tag_data) VALUES ($1, $2, $3, $4)`
 		}
 
 		for _, m := range metrics {
@@ -1238,33 +1251,32 @@ func SendToPostgres(storeMessages []MetricStoreMessage) error {
 				if err != nil {
 					log.Errorf("Skipping 1 metric for [%s:%s] due to JSON conversion error: %s", m.DBName, m.Metric, err)
 					atomic.AddUint64(&datastoreWriteFailuresCounter, 1)
-					goto stmt_close
+					goto txn_err
 				}
 				if PGSchemaType == "custom" {
-					_, err = stmt.Exec(m.Time, m.DBName, m.Metric, string(jsonBytes), string(jsonBytesTags))
+					_, err = txn.Exec(metricInsert, m.Time, m.DBName, m.Metric, string(jsonBytes), string(jsonBytesTags))
 				} else {
-					_, err = stmt.Exec(m.Time, m.DBName, string(jsonBytes), string(jsonBytesTags))
+					_, err = txn.Exec(metricInsert, m.Time, m.DBName, string(jsonBytes), string(jsonBytesTags))
 				}
 				if err != nil {
 					log.Errorf("Formatting metric %s data to COPY format failed for %s: %v ", m.Metric, m.DBName, err)
 					atomic.AddUint64(&datastoreWriteFailuresCounter, 1)
-					goto stmt_close
+					goto txn_err
 				}
 			} else {
 				if PGSchemaType == "custom" {
-					_, err = stmt.Exec(m.Time, m.DBName, m.Metric, string(jsonBytes), nil)
+					_, err = txn.Exec(metricInsert, m.Time, m.DBName, m.Metric, string(jsonBytes), nil)
 				} else {
-					_, err = stmt.Exec(m.Time, m.DBName, string(jsonBytes), nil)
+					_, err = txn.Exec(metricInsert, m.Time, m.DBName, string(jsonBytes), nil)
 				}
 				if err != nil {
 					log.Errorf("Formatting metric %s data to COPY format failed for %s: %v ", m.Metric, m.DBName, err)
 					atomic.AddUint64(&datastoreWriteFailuresCounter, 1)
-					goto stmt_close
+					goto txn_err
 				}
 			}
 		}
 
-		_, err = stmt.Exec()
 		if err != nil {
 			log.Error("COPY to Postgres failed:", err)
 			atomic.AddUint64(&datastoreWriteFailuresCounter, 1)
@@ -1273,10 +1285,9 @@ func SendToPostgres(storeMessages []MetricStoreMessage) error {
 				forceRecreatePGMetricPartitions = true
 			}
 		}
-	stmt_close:
-		err = stmt.Close()
+	txn_err:
 		if err != nil {
-			log.Error("stmt.Close() failed:", err)
+			log.Error("txn.Exec() error: ", err)
 		}
 	}
 
@@ -2942,9 +2953,9 @@ func FilterPgbouncerData(data []map[string]interface{}, databaseToKeep string, v
 				if k == "tag_database" {
 					continue
 				}
-				decimalCounter, err := decimal.NewFromString(string(v.([]uint8)))
+				decimalCounter, err := decimal.NewFromString(v.(string))
 				if err != nil {
-					log.Errorf("Could not parse \"%+v\" to Decimal: %s", string(v.([]uint8)), err)
+					log.Errorf("Could not parse \"%+v\" to Decimal: %s", v.(string), err)
 					return filtered_data
 				}
 				dr[k] = decimalCounter.IntPart() // technically could cause overflow...but highly unlikely for 2^63
@@ -4509,7 +4520,7 @@ func ResolveDatabasesFromConfigEntry(ce MonitoredDatabase) ([]MonitoredDatabase,
 
 	for _, templateDB := range templateDBsToTry {
 		c, err = GetPostgresDBConnection(ce.LibPQConnStr, ce.Host, ce.Port, templateDB, ce.User, ce.Password,
-			ce.SslMode, ce.SslRootCAPath, ce.SslClientCertPath, ce.SslClientKeyPath)
+			ce.SslMode, ce.SslRootCAPath, ce.SslClientCertPath, ce.SslClientKeyPath, ce.DBType)
 		if err != nil {
 			return md, err
 		}
@@ -4618,7 +4629,7 @@ func GetMonitoredDatabasesFromMonitoringConfig(mc []MonitoredDatabase) []Monitor
 			log.Warningf("Ignoring host \"%s\" as \"dbname\" attribute not specified but required by dbtype=postgres", e.DBUniqueName)
 			continue
 		}
-		if len(e.DBName) == 0 || e.DBType == DBTYPE_PG_CONT || e.DBType == DBTYPE_PATRONI || e.DBType == DBTYPE_PATRONI_CONT || e.DBType == DBTYPE_PATRONI_NAMESPACE_DISCOVERY {
+		if len(e.DBName) == 0 && (e.DBType == DBTYPE_PG_CONT || e.DBType == DBTYPE_PATRONI || e.DBType == DBTYPE_PATRONI_CONT || e.DBType == DBTYPE_PATRONI_NAMESPACE_DISCOVERY) {
 			if e.DBType == DBTYPE_PG_CONT {
 				log.Debugf("Adding \"%s\" (host=%s, port=%s) to continuous monitoring ...", e.DBUniqueName, e.Host, e.Port)
 			}
@@ -4914,7 +4925,7 @@ func getPathUnderlyingDeviceId(path string) (uint64, error) {
 		return 0, err
 	}
 	stat := fi.Sys().(*syscall.Stat_t)
-	return stat.Dev, nil
+	return uint64(stat.Dev), nil
 }
 
 // connects actually to the instance to determine PG relevant disk paths / mounts

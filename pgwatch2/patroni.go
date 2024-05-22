@@ -324,7 +324,7 @@ func ResolveDatabasesFromPatroni(ce MonitoredDatabase) ([]MonitoredDatabase, err
 			continue
 		} else {
 			c, err := GetPostgresDBConnection("", host, port, "template1", ce.User, ce.Password,
-				ce.SslMode, ce.SslRootCAPath, ce.SslClientCertPath, ce.SslClientKeyPath)
+				ce.SslMode, ce.SslRootCAPath, ce.SslClientCertPath, ce.SslClientKeyPath, ce.DBType)
 			if err != nil {
 				log.Errorf("Could not contact Patroni member [%s:%s]: %v", ce.DBUniqueName, m.Scope, err)
 				continue
